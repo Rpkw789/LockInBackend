@@ -1,13 +1,14 @@
-const admin = require("./routes/admin");
-
+const uploadRouter = require("./routes/upload.routes");
+const retrieveRouter = require("./routes/retrieve.routes");
 const express = require('express')
 const app = express()
 const port = 3000
 
 // Loading Routes
-app.use('/admin', admin);
+app.use('/upload', uploadRouter);
+app.use('/retrieve', retrieveRouter);
 
 // Operation
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`Server listening on port ${port}`)
 })
