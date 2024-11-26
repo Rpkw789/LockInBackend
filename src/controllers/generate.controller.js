@@ -1,13 +1,14 @@
-const upload = require("../middlewares/upload.middleware");
 const extractPdfText = require("../utils/extractText.util");
 const queryOpenAi = require("../services/openai.service");
 const connectToDatabase = require("../database/mongodb.connection");
+const deleteFile = require("../utils/deleteFile.util");
 
 const uploadAndGenerateMCQs = async (req, res) => {
     const filePath = req.file.path;
     const questions = await getResponseOpenAi(filePath);
     if(Array.isArray(questions)) {
         storeInDatabase(questions, req);
+        deleteFile(filePath);
         res.status(200).send({message: "MCQs generated and stored successfully!"});
     } else {
         res.status(500).send({error: "Failed to generate and store MCQs"});
@@ -22,7 +23,7 @@ const storeInDatabase = async (questions, req) => {
         return {
             ...question,
             uid: req.user.uid,
-            document: req.file.path
+            document: req.file.filename
         }
     });
     await collection.insertMany(formattedQuestions);
@@ -30,7 +31,7 @@ const storeInDatabase = async (questions, req) => {
     const userCollection = db.collection('users');
     const filter = { uid: `${req.user.uid}`};
     const update = {
-        $push: {documents: `${req.file.path}`}
+        $push: {documents: `${req.file.filename}`}
     };
 
     await userCollection.updateOne(filter, update, { upsert: true});
