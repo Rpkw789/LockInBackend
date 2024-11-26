@@ -1,0 +1,40 @@
+project/
+│
+├── src/                    # Main application source code
+│   ├── app.js              # Entry point (Express app setup)
+│   ├── routes/             # Route definitions
+│   │   ├── index.js        # Main route handler
+│   │   ├── user.routes.js  # User-related routes
+│   │   └── auth.routes.js  # Authentication-related routes
+│   ├── controllers/        # Business logic for routes
+│   │   ├── user.controller.js
+│   │   └── auth.controller.js
+│   ├── models/             # Database models/schemas
+│   │   ├── user.model.js
+│   │   └── post.model.js
+│   ├── middlewares/        # Custom middleware (e.g., auth, logging)
+│   │   ├── auth.middleware.js
+│   │   └── error.middleware.js
+│   ├── services/           # Reusable service logic (e.g., external APIs, helpers)
+│   │   ├── user.service.js
+│   │   └── email.service.js
+│   ├── utils/              # Utility functions/helpers
+│   │   ├── logger.js
+│   │   └── validation.js
+│   ├── config/             # Configuration (e.g., environment variables)
+│   │   ├── db.config.js
+│   │   └── app.config.js
+│   └── database/           # Database connection setup
+│       └── connection.js
+│
+├── public/                 # Static assets (e.g., images, CSS, JS)
+│
+├── tests/                  # Unit and integration tests
+│   ├── routes/             # Tests for routes
+│   ├── controllers/        # Tests for controllers
+│   └── utils/              # Tests for utilities
+│
+├── .env                    # Environment variables
+├── package.json            # npm configuration
+├── package-lock.json       # Dependency lock file
+└── README.md               # Project documentation
