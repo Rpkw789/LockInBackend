@@ -1,0 +1,67 @@
+const upload = require("../middlewares/upload.middleware");
+const extractPdfText = require("../utils/extractText.util");
+const queryOpenAi = require("../services/openai.service");
+const connectToDatabase = require("../database/mongodb.connection");
+
+const uploadAndGenerateMCQs = async (req, res) => {
+    const filePath = req.file.path;
+    const questions = await getResponseOpenAi(filePath);
+    if(Array.isArray(questions)) {
+        storeInDatabase(questions, req);
+        res.status(200).send({message: "MCQs generated and stored successfully!"});
+    } else {
+        res.status(500).send({error: "Failed to generate and store MCQs"});
+    }
+    
+}
+
+const storeInDatabase = async (questions, req) => {
+    const db = await connectToDatabase();  // Get the shared database connection
+    const collection = db.collection('MCQs');
+    const formattedQuestions = questions.map(question => {
+        return {
+            ...question,
+            uid: req.user.uid,
+            document: req.file.path
+        }
+    });
+    await collection.insertMany(formattedQuestions);
+
+    const userCollection = db.collection('users');
+    const filter = { uid: `${req.user.uid}`};
+    const update = {
+        $push: {documents: `${req.file.path}`}
+    };
+
+    await userCollection.updateOne(filter, update, { upsert: true});
+}
+
+const getResponseOpenAi = async filePath => {
+    const text = await extractPdfText(filePath);
+    const stringResponse = await queryOpenAi(text);
+    const questions = parseString(stringResponse);
+    return questions;
+}
+
+const parseString = stringResponse => {
+    try {
+        const jsonObject = JSON.parse(stringResponse);
+        return jsonObject;
+    } catch (error) {
+        try {
+            const regex = /```json([\s\S]*?)```/;
+            const match = stringResponse.match(regex);
+            if (match) {
+                const response = match[1].trim();
+                const jsonObject = JSON.parse(response);
+                return jsonObject;
+            } else {
+                return null;
+            }
+        } catch (error2) {
+            console.log("Invalid JSON format: " + error2);
+        }
+    }
+}
+
+module.exports = uploadAndGenerateMCQs;

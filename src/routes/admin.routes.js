@@ -1,6 +1,8 @@
 const express = require('express')
 const authenticateToken = require("../middlewares/auth.middleware");
 const connectToDatabase = require("../database/mongodb.connection");
+const upload = require("../middlewares/upload.middleware");
+const uploadAndGenerateMCQs = require("../controllers/generate.controller");
 
 const router = express.Router();
 
@@ -14,7 +16,9 @@ router.post('/', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Error writing to MongoDB:', error);
     }
-    res.send({message: "Test", user: req.user});
+    res.send({ message: "Test", user: req.user });
 })
+
+router.use('/upload', upload.single('file'), authenticateToken, uploadAndGenerateMCQs)
 
 module.exports = router;
