@@ -5,6 +5,6 @@ const uploadAndGenerateMCQs = require("../controllers/generate.controller");
 
 const router = express.Router();
 
-router.use('/', upload.single('file'), authenticateToken, uploadAndGenerateMCQs)
+router.use('/', upload.single('file'), authenticateToken, uploadAndGenerateMCQs);
 
 module.exports = router;

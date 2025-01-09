@@ -4,6 +4,7 @@ const connectToDatabase = require("../database/mongodb.connection");
 const deleteFile = require("../utils/deleteFile.util");
 
 const uploadAndGenerateMCQs = async (req, res) => {
+    console.log("Upload Request Received");
     const filePath = req.file.path;
     const questions = await getResponseOpenAi(filePath);
     if(Array.isArray(questions)) {
@@ -27,6 +28,7 @@ const storeInDatabase = async (questions, req) => {
         }
     });
     await collection.insertMany(formattedQuestions);
+    console.log("MCQs uploaded");
 
     const userCollection = db.collection('users');
     const filter = { uid: `${req.user.uid}`};
@@ -35,12 +37,16 @@ const storeInDatabase = async (questions, req) => {
     };
 
     await userCollection.updateOne(filter, update, { upsert: true});
+    console.log("Document ID uploaded");
 }
 
 const getResponseOpenAi = async filePath => {
     const text = await extractPdfText(filePath);
     const stringResponse = await queryOpenAi(text);
+    console.log("OpenAI response: " + stringResponse);
     const questions = parseString(stringResponse);
+    console.log("Questions:");
+    console.log(questions);
     return questions;
 }
 
