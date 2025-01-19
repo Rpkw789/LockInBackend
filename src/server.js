@@ -6,6 +6,7 @@ const app = express()
 const port = 3000
 
 app.use(cors());
+app.use(express.json());
 // Loading Routes
 app.use('/upload', uploadRouter);
 app.use('/retrieve', retrieveRouter);

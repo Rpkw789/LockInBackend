@@ -7,14 +7,14 @@ const uploadAndGenerateMCQs = async (req, res) => {
     console.log("Upload Request Received");
     const filePath = req.file.path;
     const questions = await getResponseOpenAi(filePath);
-    if(Array.isArray(questions)) {
+    if (Array.isArray(questions)) {
         storeInDatabase(questions, req);
         deleteFile(filePath);
-        res.status(200).send({message: "MCQs generated and stored successfully!"});
+        res.status(200).send({ message: "MCQs generated and stored successfully!" });
     } else {
-        res.status(500).send({error: "Failed to generate and store MCQs"});
+        res.status(500).send({ error: "Failed to generate and store MCQs" });
     }
-    
+
 }
 
 const storeInDatabase = async (questions, req) => {
@@ -31,38 +31,54 @@ const storeInDatabase = async (questions, req) => {
     console.log("MCQs uploaded");
 
     const userCollection = db.collection('users');
-    const filter = { uid: `${req.user.uid}`};
+    const filter = { uid: `${req.user.uid}` };
     const update = {
-        $push: {documents: `${req.file.filename}`}
+        $push: { documents: `${req.file.filename}` }
     };
 
-    await userCollection.updateOne(filter, update, { upsert: true});
+    await userCollection.updateOne(filter, update, { upsert: true });
     console.log("Document ID uploaded");
 }
 
 const getResponseOpenAi = async filePath => {
     const text = await extractPdfText(filePath);
     const stringResponse = await queryOpenAi(text);
-    console.log("OpenAI response: " + stringResponse);
-    const questions = parseString(stringResponse);
-    console.log("Questions:");
-    console.log(questions);
-    return questions;
+    console.log(stringResponse);
+    return stringResponse;
 }
+
+/*
+function extractBracketsContent(input) {
+    const match = input.match(/\[.*?\]/g);
+    return match ? match.join('') : '';
+}
+
 
 const parseString = stringResponse => {
     try {
-        const jsonObject = JSON.parse(stringResponse);
+        removedString = extractBracketsContent(stringResponse);
+        console.log(removedString);
+        const jsonObject = JSON.parse(removedString);
+        console.log("initial match " + typeof jsonObject);
         return jsonObject;
     } catch (error) {
         try {
-            const regex = /```json([\s\S]*?)```/;
+            const regex = /```([\s\S]*?)```/;
             const match = stringResponse.match(regex);
             if (match) {
+                console.log("match1");
                 const response = match[1].trim();
                 const jsonObject = JSON.parse(response);
                 return jsonObject;
             } else {
+                const regex2 = /\[[^\]]*\]/;
+                const match2 = stringResponse.match(regex2);
+                if (match2) {
+                    console.log("match2");
+                    const response2 = match[0].trim();
+                    const jsonObject = JSON.parse(response2);
+                    return jsonObject;
+                }
                 return null;
             }
         } catch (error2) {
@@ -70,5 +86,6 @@ const parseString = stringResponse => {
         }
     }
 }
+*/
 
 module.exports = uploadAndGenerateMCQs;

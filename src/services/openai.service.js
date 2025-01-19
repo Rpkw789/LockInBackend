@@ -6,16 +6,27 @@ let openai = new OpenAI({
 });
 
 const queryOpenAi = async text => {
+    const prompt = `
+    Based on the following text, generate 3 multiple-choice questions (MCQs) with 4 options each, and indicate the correct answer. Format the response as a JSON array of objects, like this:
+    [
+      {
+        "question": "Question 1?",
+        "options": ["Option A", "Option B", "Option C", "Option D"],
+        "answer": "Option A"
+      },
+      ...
+    ]
+
+    Text:
+    ${text}
+  `;
+
     const response = await openai.chat.completions.create({
-        messages: [
-            {role: 'system', content: 'You are a helpful assistant.'},
-            {role: 'user', content: `Here is the text extracted from a PDF: ${text}`},
-            {role: 'user', content: 'Read the text and generate 10 Multiple Choice Questions in json format with the following variables 1. question 2. choice1 3. choice2 4. choice3 5. choice4 6. answer   "answer" is an integer from range 1 to 4, representing which choice is correct'}
-        ],
+        messages: [{ role: "user", content: prompt }],
         model: 'gpt-4',
     });
 
-    return response.choices[0].message.content;
+    return JSON.parse(response.choices[0].message.content);
 }
 
 module.exports = queryOpenAi;

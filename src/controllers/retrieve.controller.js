@@ -22,7 +22,7 @@ const retrieveMCQsInADocument = async (req, res) => {
         const collection = db.collection("MCQs");
         const filter = {
             uid: `${req.user.uid}`,
-            document: `${req.headers.document}`,
+            document: `${req.body.document}`,
         };
     
         const MCQs = await collection.find(filter).toArray();
